@@ -183,7 +183,7 @@ def get_voc_from_db():
 
 def get_or_create_the_DB():
     global TABLE_NAME
-    conn = sqlite3.connect("mydatabase.db")
+    conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
     try:
         a = cursor.execute(f"SELECT * FROM {TABLE_NAME}").fetchall()
@@ -195,7 +195,7 @@ def get_or_create_the_DB():
                            """)
         conn.commit()
     except:
-        logging.CRITICAL("Oh god no, why db is down??")
+        logging.critical("Oh god no, why db is down??")
         raise
     finally:
         cursor.close()
