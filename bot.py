@@ -14,7 +14,7 @@ import pyodbc
 logging.basicConfig(level=logging.INFO)
 mplLogger = logging.getLogger("matplotlib")
 mplLogger.setLevel(logging.WARNING)
-DATABASE = '.\mydatabase.db'
+DATABASE = '.\db\mydatabase.db'
 if config.use_proxy:
     telebot.apihelper.proxy = {'https': 'socks5h://{}:{}@{}:{}'.format(config.proxy_user,
                                                                       config.proxy_pass,
