@@ -88,6 +88,9 @@ def send_words(message):
     logging.debug('Learning begins')
     words = get_voc_from_db()
     while sending_now:
+        if not words:
+            bot.send_message(message.chat.id, "I have no words, sorry")
+            break
         word = random.choice(words)
         sentence = word[0] + word[1] + '\n\n' + word[2]
         bot.send_message(message.chat.id, sentence)
