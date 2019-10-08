@@ -164,7 +164,7 @@ def send_to_db(list_to_add):
         conn.commit()
         cursor.close()
     except:
-        logging.CRITICAL("Commiting the word gone wrong")
+        logging.critical("Commiting the word gone wrong")
 
 def get_voc_from_db():
     global conn
@@ -177,7 +177,7 @@ def get_voc_from_db():
         r = res.fetchall()
         cursor.close()
     except:
-        logging.CRITICAL("Commiting the word gone wrong")
+        logging.critical("Commiting the word gone wrong")
         raise
     return r
 
