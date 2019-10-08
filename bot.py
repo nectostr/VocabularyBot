@@ -200,7 +200,7 @@ def get_or_create_the_DB():
     finally:
         cursor.close()
         conn.close()
-    conn = pyodbc.connect("DRIVER=SQLite3 ODBC Driver;DATABASE={};username=;".format(DATABASE))
+    conn = pyodbc.connect("DRIVER=SQLITE3;DATABASE={};username=;".format(DATABASE))
 
     return conn
 
