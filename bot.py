@@ -10,11 +10,11 @@ import re
 import random
 import time
 import pyodbc
-
+import os
 logging.basicConfig(level=logging.INFO)
 mplLogger = logging.getLogger("matplotlib")
 mplLogger.setLevel(logging.WARNING)
-DATABASE = '/db/mydatabase.db'
+DATABASE = os.path.abspath(os.path.join(".",os.path.join("db","mydatabase.db")))
 if config.use_proxy:
     telebot.apihelper.proxy = {'https': 'socks5h://{}:{}@{}:{}'.format(config.proxy_user,
                                                                       config.proxy_pass,
@@ -27,21 +27,21 @@ local_words_storage = []
 adding_words = 0
 current_word = ''
 deleting_ticket = 0
-sending_now = False
+learning_now = False
 wait_time = 60#5*60
 example_mode = False
 TABLE_NAME = 'WORDS'
 
 @bot.message_handler(commands=["start"])
 def send_welcome(message):
+    global markup
     logging.debug('start command incoming')
     bot.reply_to(message, r"""I am trying to help you, idiot, to work with new words. I have such comands:
                             /start - do nothing, just lol you
                             /add_words_mode - to begin adding new words and then to end
                             /example_mode - to filling or not examples in adding words
-                            /learning - to start learning
-                            /stop_learning - just gues what it coluld be for
-                            /change_learning_rate - change speed of remembering you the word""")
+                            /learning - to start and stop learning
+                            /change_learning_rate - change speed of remembering you the word""", reply_markup=markup)
 
 @bot.message_handler(commands=["example_mode"])
 def send_welcome(message):
@@ -72,29 +72,30 @@ def add_words(message):
         logging.debug('db fin')
         bot.send_message(message.chat.id, "Done, my commandor, /learning, when you are ready")
 
-@bot.message_handler(commands=["stop_learning"])
-def add_words(message):
-    global sending_now
-    sending_now = False
-    bot.reply_to(message, "Yep, as you wish, my treasure! \n<3")
 
 
 @bot.message_handler(commands=["learning"])
 def send_words(message):
     global adding_words
     global wait_time
-    global sending_now
-    sending_now = True
-    logging.debug('Learning begins')
-    words = get_voc_from_db()
-    while sending_now:
-        if not words:
-            bot.send_message(message.chat.id, "I have no words, sorry")
-            break
-        word = random.choice(words)
-        sentence = word[0] + word[1] + '\n\n' + word[2]
-        bot.send_message(message.chat.id, sentence)
-        time.sleep(wait_time)
+    global learning_now
+    if not learning_now:
+        learning_now = True
+        logging.debug('Learning begins')
+        words = get_voc_from_db()
+        while learning_now:
+            if not words:
+                bot.send_message(message.chat.id, "I have no words, sorry")
+                break
+            word = random.choice(words)
+            sentence = word[0] + word[1] + '\n\n' + word[2]
+            bot.send_message(message.chat.id, sentence)
+            time.sleep(wait_time)
+        bot.send_message(message.chat.id, "Stopped, as you wish, my beauty \n <3")
+
+    else:
+        learning_now = False
+        bot.send_message(message.chat.id, "O, dear, please wait until i confirm this")
 
 @bot.message_handler(commands=["change_learning_rate"])
 def change_learning_rate(message):
@@ -203,7 +204,7 @@ def get_or_create_the_DB():
     finally:
         cursor.close()
         conn.close()
-    conn = pyodbc.connect("DRIVER=SQLITE3;DATABASE={};username=;".format(DATABASE))
+    conn = pyodbc.connect("DRIVER={};DATABASE={};username=;".format(pyodbc.drivers()[-1],DATABASE))
 
     return conn
 
@@ -213,4 +214,7 @@ if __name__ == '__main__':
     # print(a, b)
     conn = get_or_create_the_DB()
     cursor = conn.cursor()
+    markup = telebot.types.ReplyKeyboardMarkup(one_time_keyboard=True, resize_keyboard=True)
+    for item in ("/start", "/learning", "/change_learning_rate", "/add_words_mode"):
+        markup.add(item)
     bot.polling(none_stop=True)
